@@ -1,57 +1,100 @@
-// Fonction contructeur
-function Products(name, description, priceExcludingTaxes, stock, active, ageLimit) {
-    this.name = name,
-    this.description = description,
-    this.priceExcludingTaxes = Number(priceExcludingTaxes).toFixed(2),
-    this.stock = stock,
-    this.active = active,
-    this.ageLimit = ageLimit
+/**
+ * Fonction constructeur Product
+ */
+
+function Product(
+    name, 
+    description, 
+    price, 
+    vat, 
+    stock, 
+    ageLimit,
+    active,
+    discount
+) {
+    this.name = String(name).trim();
+    this.description = String(description).trim();
+
+    if (typeof price !== "number" | price < 0) {
+        throw new Error("Price must be a positive number")
+    };
+    this.price = price;
+
+    if (typeof vat === "number") {
+        this.vat = vat;
+    };
+
+    if (typeof stock !== "number" | stock < 0) {
+        throw new Error("Stock must be a positive number")
+    };
+    this.stock = stock;
+
+    if (typeof ageLimit === "number") {
+        this.ageLimit = ageLimit > 0 ? ageLimit : 0;
+    };
+
+    if (typeof active === "boolean") {
+        this.active = active;
+    };
+
+    if (typeof discount === "number") {
+        this.discount = discount > 0 ? discount : 0;
+    };
 };
 
-// Prototypes
-Products.prototype.taxe = 20;
-Products.prototype.discount = 0;
+/**
+ * Protoype
+ */
 
-// Méthodes
-Products.prototype.priceIncludingTaxes = function () {
-    return this.priceExcludingTaxes * (1 + this.taxe / 100);
+Product.prototype.vat = 20;
+Product.prototype.discount = 0;
+
+/**
+ * 
+ * Méthodes
+ */
+
+Product.prototype.getFullPrice = function () {
+    return (this.price * (1 + this.vat / 100)) + "€";
 };
 
-Products.prototype.checkingStatus = function () {
-    this.active = this.stock > 0;
-    return this.active;
+Product.prototype.removeFromSale = function () {
+    if (this.stock === 0) {
+        return this.active === false;
+    };
 };
 
-Products.prototype.getDiscount = function () {
+Product.prototype.checkAge = function (age) {
+    return age > this.ageLimit;
+};
+
+Product.prototype.getDiscountPrice = function () {
     if (this.discount > 0) {
-        const fullPrice = this.priceIncludingTaxes();
-        return fullPrice * (1 - this.discount / 100);
-    } else {
-        return "Il n'y a pas de remise pour ce produit.";
-    }
+        const fullPrice = this.getFullPrice();
+        return (fullPrice * (1 - this.discount / 100)).toFixed(2);
+    };
+    return "Pas de remise.";
 };
 
-Products.prototype.getString = function () {
-    return `Le produit ${this.name} est vendu au prix de ${this.priceExcludingTaxes
-    } €, soit ${this.priceIncludingTaxes().toFixed(2)} € TTC. ${
+Product.prototype.getInformation = function () {
+    return `Le produit ${this.name} est vendu au prix de ${this.getFullPrice()} € TTC. ${
         this.ageLimit 
-        ? "Vous devez avoir " + this.ageLimit + "ans pour l'acheter. " : ""
-    } ${this.discount 
-        ? "Une remise de " + this.discount + "% est disponible." : ""
+        ? "Vous devez avoir " + this.ageLimit + " ans pour l'acheter." 
+        : ""
+    } ${
+        this.discount 
+        ? " Une remise de " + this.discount + " % est disponible." 
+        : ""
     }`;
 };
 
-const product1 = new Products("ps5", "console", 500, 10, true, 18);
+/**
+ * Tests
+ */
+
+const product1 = new Product("ps5", "console", 500, 20, 10, null, true, 20);
+
 console.log(product1);
-console.log(product1.priceIncludingTaxes().toFixed(2));
-console.log(product1.checkingStatus());
-
-product1.stock = 0;
-console.log(product1.checkingStatus());
-
-console.log(product1.getDiscount());
-
-product1.discount = 50;
-console.log(product1.getDiscount().toFixed(2));
-
-console.log(product1.getString());
+console.log(product1.getFullPrice());
+console.log(product1.getDiscountPrice());
+console.log(product1.getInformation());
